@@ -2,14 +2,14 @@
 
 
 ## First initiate the repos
-git submodule init
+`git submodule init
 git submodule update
 git submodule foreach git submodule init
 git submodule foreach git submodule update
-cd lib/openssl/ 
+cd lib/openssl/ `
 
 # Now co
-Configure linux-x86_64 --prefix=`(cd .. && pwd)`/bin
-make install_dev
+`Configure linux-x86_64 --prefix=`(cd .. && pwd)`/bin
+make install_dev`
 
 # Now co
