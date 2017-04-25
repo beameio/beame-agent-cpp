@@ -1,4 +1,8 @@
 # beame-agent-cpp
+Background, beame-insta-ssl is a heavy toolkit due to its nodejs dependency. To relativly simplify the the product we started developing a device agent, target spicifically for embedded devices with or without linux. 
+
+This is supposed to be pure CPP 11 with boost, a just a few libs to make development resonable. The project is ment to compile with a cross chain therefore it includes all of its dependencies, i.e. openssl, boost, librapidjson, and libwebscoket of one kind or another. 
+
 
 
 ## First initiate the repos
