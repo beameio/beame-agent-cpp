@@ -1,0 +1,8 @@
+[submodule "lib/socket.io-cpp"]
+	path = lib/socket.io-cpp
+	url = https://github.com/socketio/socket.io-client-cpp.git
+	branch = master
+[submodule "lib/openssl"]
+	path = lib/openssl
+	url = https://github.com/openssl/openssl.git
+	branch = OpenSSL_1_1_0-stable
