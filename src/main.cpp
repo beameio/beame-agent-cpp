@@ -4,7 +4,7 @@
 //  Created with VIM by Zeev Glozman
 //
 
-#include "../../src/sio_client.h"
+#include "sio_client.h"
 #include "boost/property_tree/ptree.hpp"
 #include "boost/property_tree/json_parser.hpp"
 #include <boost/foreach.hpp>
