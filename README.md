@@ -6,10 +6,10 @@ This is supposed to be pure CPP 11 with boost, a just a few libs to make develop
 
 
 ## First initiate the repos
-``git submodule init``
-``git submodule update``
-``git submodule foreach git submodule init``
-``git submodule foreach git submodule update``
+git submodule init
+git submodule update
+git submodule foreach git submodule init
+git submodule foreach git submodule update
 
 # Now co
 `cd lib/openssl/ 
