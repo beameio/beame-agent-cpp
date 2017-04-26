@@ -2,11 +2,3 @@
 	path = lib/socket.io-cpp
 	url = https://github.com/socketio/socket.io-client-cpp.git
 	branch = master
-[submodule "lib/openssl"]
-	path = lib/openssl
-	url = https://github.com/openssl/openssl.git
-	branch = OpenSSL_1_1_0-stable
-[submodule "lib/boost"]
-	path = lib/boost
-	url = https://github.com/boostorg/boost.git
-	branch = e712782de0b8bbd0efb710ed1584b3c1c3e60a52
