@@ -2,3 +2,10 @@
 ./lib
 .lib
 lib/bin/
+CMakeCache.txt
+CMakeFiles/
+CMakeLists.txt
+Makefile
+beame_insta_agent
+cmake_install.cmake
+
