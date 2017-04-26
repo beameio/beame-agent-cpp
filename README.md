@@ -17,3 +17,7 @@ This is supposed to be pure CPP 11 with boost, a just a few libs to make develop
 make install_dev`
 
 # Now co
+cd lib/boost/
+./boostrap.sh
+./bjam install --prefix=../bin/boost/ --with-system --with-date_time --with-random --with-thread link=static runtime-link=shared threading=multi
+cmake -DCMAKE_INSTALL_PREFIX=../libsocketio/ -DBOOST_INCLUDEDIR=../bin/boost -DBOOST_LIBRARYDIR=../bin/boost/ DOPENSSL_ROOT_DIR=../bin/ -DOPENSSL_LIBRARIES=../include -DBOOST_VER:STRING=1.63.0 . 
