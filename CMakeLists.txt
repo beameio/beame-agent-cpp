@@ -33,14 +33,6 @@ set(OPENSSL_ROOT_DIR ${OPENSSL_BINDIR})
 set(OpenSSL_DIR ${OPENSSL_BINDIR})
 set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
-include(FindOpenSSL)
-message("OPEN SSL ROOT PATH" ${OPENSSL_ROOT_DIR})
-message("OPENSSL_FOUND " ${OPENSSL_FOUND})
-message("OPENSSL_INCLUDE_DIR" ${OPENSSL_INCLUDE_DIR})
-message("OPENSSL_CRYPTO_LIBRARY" ${OPENSSL_CRYPTO_LIBRARY})
-message("OOPENSSL_CRYPTO_LIBRARYPENSSL_SSL_LIBRARY" ${OPENSSL_SSL_LIBRARY})
-message("OPENSSL_LIBRARIES" ${OPENSSL_LIBRARI})
-message("OPENSSL_VERSION" ${OPENSSL_VERSION})
 
 
 EXTERNALPROJECT_ADD(
@@ -63,29 +55,22 @@ EXTERNALPROJECT_ADD(
     )
 
 find_package(Boost ${BOOST_VER} REQUIRED COMPONENTS system date_time random thread)
+include(FindOpenSSL)
+
 EXTERNALPROJECT_ADD(
     socketio-ep
     GIT_REPOSITORY git@github.com:beameio/socket.io-client-cpp.git
-    UPDATE_COMMAND ls
     BUILD_IN_SOURCE 1
     CMAKE_ARGS -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR}
     )
 
 ExternalProject_Get_Property(socketio-ep SOURCE_DIR)
-find_library(SIO_LIB libsioclient_tls.a ${SOURCE_DIR})
-message("*********SIO INSTALL_DIR is " ${SIO_LIB})
-#set(SOURCE_DIR ${SIO_LIB})
+set(SIO_SOURCE_PATH  ${SOURCE_DIR})
 
-add_executable(beame-agent ./src/main.cpp)
-add_dependencies(beame-agent boost_ep socketio-ep openssl)
-
-target_include_directories(beame-agent PRIVATE ${Boost_INCLUDE_DIRS} 
-    ${SOURCE_DIR}/src/ 
-    ${OPENSSL_INCLUDE_DIR}
+EXTERNALPROJECT_ADD(
+    beame-agent DEPENDS socketio-ep
+    SOURCE_DIR ./src 
+    BUILD_IN_SOURCE 1
+    CMAKE_ARGS -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR} -DSIO_SOURCE_PATH=${SIO_SOURCE_PATH}
+    INSTALL_COMMAND ""
     )
-
-target_link_libraries(beame-agent ${SIO_LIB})
-target_link_libraries(beame-agent crypto )
-target_link_libraries(beame-agent ssl)
-target_link_libraries(beame-agent ${Boost_LIBRARIES})
-target_link_libraries(beame-agent pthread)
