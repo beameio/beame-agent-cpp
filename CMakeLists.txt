@@ -19,12 +19,13 @@ MESSAGE("Open SSL Target Bin DIR" ${OPENSSL_BINDIR})
 MESSAGE("CMAKE ROOT PATH" ${$CMAKE_FIND_ROOT_PATH})
 EXTERNALPROJECT_ADD(
     openssl
-    URL https://www.openssl.org/source/openssl-1.1.0e.tar.gz 
+    URL https://www.openssl.org/source/openssl-1.0.2k.tar.gz 
+    URL_HASH SHA256=6b3977c61f2aedf0f96367dcfb5c6e578cf37e7b8d913b4ecb6643c3cb88d8c0
     DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}/downloads
     # URL ${CMAKE_SOURCE_DIR}/vendor/openssl-1.0.2-latest.tar.gz
     CONFIGURE_COMMAND ./config no-shared no-idea no-mdc2 no-rc5 --prefix=${OPENSSL_BINDIR} 
     BUILD_COMMAND make depend && make
-    INSTALL_COMMAND make install_dev
+    INSTALL_COMMAND make install_sw
     BUILD_IN_SOURCE 1
     )
 
@@ -45,6 +46,7 @@ message("OPENSSL_VERSION" ${OPENSSL_VERSION})
 EXTERNALPROJECT_ADD(
     boost_ep
     URL https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.zip
+    URL_HASH SHA256=b99973c805f38b549dbeaf88701c0abeff8b0e8eaa4066df47cac10a32097523
     UPDATE_COMMAND ""
     PATCH_COMMAND ""
     CONFIGURE_COMMAND ${Boost_Bootstrap_Command}
@@ -64,8 +66,6 @@ EXTERNALPROJECT_ADD(
 EXTERNALPROJECT_ADD(
     socketio-ep
     GIT_REPOSITORY https://github.com/socketio/socket.io-client-cpp.git 
-    UPDATE_COMMAND "ls"
-    PATCH_COMMAND ""
     BUILD_IN_SOURCE 1
     CMAKE_ARGS -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR}
     )
