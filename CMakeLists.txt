@@ -62,7 +62,7 @@ EXTERNALPROJECT_ADD(
 
     )
 
-
+find_package(Boost ${BOOST_VER} REQUIRED COMPONENTS system date_time random thread)
 EXTERNALPROJECT_ADD(
     socketio-ep
     GIT_REPOSITORY https://github.com/socketio/socket.io-client-cpp.git 
@@ -70,6 +70,20 @@ EXTERNALPROJECT_ADD(
     CMAKE_ARGS -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR}
     )
 
-ExternalProject_Get_Property(socketio-ep INSTALL_DIR)
-message("*********SIO INSTALL_DIR is " ${INSTALL_DIR})
-set(SIO_INCLUDE_DIR ${INSTALL})
+ExternalProject_Get_Property(socketio-ep SOURCE_DIR)
+find_library(SIO_LIB libsioclient_tls.a ${SOURCE_DIR})
+message("*********SIO INSTALL_DIR is " ${SIO_LIB})
+#set(SOURCE_DIR ${SIO_LIB})
+
+add_executable(beame-agent ./src/main.cpp)
+
+target_include_directories(beame-agent PRIVATE ${Boost_INCLUDE_DIRS} 
+    ${SOURCE_DIR}/src/ 
+    ${OPENSSL_INCLUDE_DIR}
+    )
+
+target_link_libraries(beame-agent ${SIO_LIB})
+target_link_libraries(beame-agent crypto )
+target_link_libraries(beame-agent ssl)
+target_link_libraries(beame-agent ${Boost_LIBRARIES})
+target_link_libraries(beame-agent pthread)
