@@ -3,6 +3,16 @@ cmake_minimum_required(VERSION 3.7)
 INCLUDE(ExternalProject)
 set(OPENSSL_BINDIR ${CMAKE_BINARY_DIR}/openssl)
 
+set( Boost_Bootstrap_Command )
+if( UNIX )
+    set( Boost_Bootstrap_Command ./bootstrap.sh )
+    set( Boost_b2_Command ./b2 )
+else()
+    if( WIN32 )
+        set( Boost_Bootstrap_Command bootstrap.bat )
+        set( Boost_b2_Command b2.exe )
+    endif()
+endif()
 
 MESSAGE("Binary DIR" ${CMAKE_BINARY_DIR})
 MESSAGE("Open SSL Target Bin DIR" ${OPENSSL_BINDIR})
@@ -30,3 +40,36 @@ message("OPENSSL_CRYPTO_LIBRARY" ${OPENSSL_CRYPTO_LIBRARY})
 message("OOPENSSL_CRYPTO_LIBRARYPENSSL_SSL_LIBRARY" ${OPENSSL_SSL_LIBRARY})
 message("OPENSSL_LIBRARIES" ${OPENSSL_LIBRARI})
 message("OPENSSL_VERSION" ${OPENSSL_VERSION})
+
+
+EXTERNALPROJECT_ADD(
+    boost_ep
+    URL https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.zip
+    UPDATE_COMMAND ""
+    PATCH_COMMAND ""
+    CONFIGURE_COMMAND ${Boost_Bootstrap_Command}
+    BUILD_COMMAND ${Boost_b2_Command} install
+    --with-system --with-date_time --with-random --with-thread link=static runtime-link=shared threading=multi
+    --prefix=${CMAKE_BINARY_DIR}/INSTALL
+    --threading=single,multi
+    --link=static
+    --variant=release
+    -j8
+    INSTALL_COMMAND ""
+    BUILD_IN_SOURCE 1
+
+    )
+
+
+EXTERNALPROJECT_ADD(
+    socketio-ep
+    GIT_REPOSITORY https://github.com/socketio/socket.io-client-cpp.git 
+    UPDATE_COMMAND "ls"
+    PATCH_COMMAND ""
+    BUILD_IN_SOURCE 1
+    CMAKE_ARGS -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR}
+    )
+
+ExternalProject_Get_Property(socketio-ep INSTALL_DIR)
+message("*********SIO INSTALL_DIR is " ${INSTALL_DIR})
+set(SIO_INCLUDE_DIR ${INSTALL})
