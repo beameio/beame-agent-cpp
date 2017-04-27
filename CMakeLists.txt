@@ -77,6 +77,7 @@ message("*********SIO INSTALL_DIR is " ${SIO_LIB})
 #set(SOURCE_DIR ${SIO_LIB})
 
 add_executable(beame-agent ./src/main.cpp)
+add_dependencies(beame-agent boost_ep socketio-ep openssl)
 
 target_include_directories(beame-agent PRIVATE ${Boost_INCLUDE_DIRS} 
     ${SOURCE_DIR}/src/ 
