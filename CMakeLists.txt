@@ -59,7 +59,7 @@ include(FindOpenSSL)
 
 EXTERNALPROJECT_ADD(
     socketio-ep
-    GIT_REPOSITORY git@github.com:beameio/socket.io-client-cpp.git
+    GIT_REPOSITORY https://github.com/beameio/socket.io-client-cpp.git
     BUILD_IN_SOURCE 1
     CMAKE_ARGS -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR}
     )
