@@ -5,6 +5,7 @@ set(OPENSSL_BINDIR ${CMAKE_BINARY_DIR}/openssl)
 set(OpenSSL_DIR ${OPENSSL_BINDIR})
 set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 get_cmake_property(_variableNames VARIABLES)
+set (CMAKE_SHARED_LINKER_FLAGS "-lstatic")
 
 find_package(Boost ${BOOST_VER} REQUIRED COMPONENTS system date_time random thread)
 include(FindOpenSSL)
@@ -22,13 +23,15 @@ target_include_directories(beame-agent PRIVATE ${Boost_INCLUDE_DIRS}
     ${SOURCE_DIR}/src/ 
     ${OPENSSL_INCLUDE_DIR}
     )
+SET(BUILD_SHARED_LIBRARIES OFF)
 #add_dependencies(beame-agent boost_ep socketio-ep openssl)
 target_link_libraries(beame-agent ${SIO_LIB})
-target_link_libraries(beame-agent ${OPENSSL_ROOT_DIR}/lib/libcrypto.a)
 target_link_libraries(beame-agent ${OPENSSL_ROOT_DIR}/lib/libssl.a)
+target_link_libraries(beame-agent ${OPENSSL_ROOT_DIR}/lib/libcrypto.a)
 target_link_libraries(beame-agent ${Boost_LIBRARIES})
 ##target_link_libraries(beame-agent ${Boost_LIBRARIES})
 target_link_libraries(beame-agent pthread)
+target_link_libraries(beame-agent dl)
 #install(FILES ${ALL_HEADERS} 
 #    DESTINATION "${CMAKE_CURRENT_LIST_DIR}/build/include"
 #    )
