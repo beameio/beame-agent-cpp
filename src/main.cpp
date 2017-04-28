@@ -8,7 +8,7 @@
 #include "boost/property_tree/ptree.hpp"
 #include "boost/property_tree/json_parser.hpp"
 #include <boost/foreach.hpp>
-
+#include <stdlib.h>
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -21,7 +21,7 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
-
+#include <functional> 
 
 #include <string>
 #ifdef WIN32
