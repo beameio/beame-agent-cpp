@@ -53,6 +53,10 @@ EXTERNALPROJECT_ADD(
     BUILD_IN_SOURCE 1
 
     )
+ExternalProject_Get_Property(boost_ep SOURCE_DIR)
+set(BOOST_ROOT  ${SOURCE_DIR})
+set(BOOST_INCLUDEDIR  ${SOURCE_DIR}/include/)
+set(BOOST_LIBRARYDIR  ${SOURCE_DIR}/lib/)
 
 #find_package(Boost ${BOOST_VER} REQUIRED COMPONENTS system date_time random thread)
 ##include(FindOpenSSL)
@@ -61,7 +65,7 @@ EXTERNALPROJECT_ADD(
     socketio-ep
     GIT_REPOSITORY https://github.com/beameio/socket.io-client-cpp.git
     BUILD_IN_SOURCE 1
-    CMAKE_ARGS -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR}
+    CMAKE_ARGS -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR} -DBOOST_INCLUDEDIR={$BOOST_INCLUDEDIR} -DBOOST_LIBRARYDIR={$BOOST_LIBRARYDIR} -DBOOST_ROOT={$BOOST_ROOT}
     )
 
 ExternalProject_Get_Property(socketio-ep SOURCE_DIR)
