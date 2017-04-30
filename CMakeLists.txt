@@ -36,7 +36,7 @@ set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
 
 EXTERNALPROJECT_ADD(
-    boost_ep
+    boost_ep DEPENDS openssl
     URL https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.zip
     URL_HASH SHA256=b99973c805f38b549dbeaf88701c0abeff8b0e8eaa4066df47cac10a32097523
     UPDATE_COMMAND ""
@@ -66,7 +66,7 @@ message("BOOST_INCLUDEDIR " ${BOOST_INCLUDEDIR})
 message("BOOST_LIBRARYDIR " ${BOOST_LIBRARYDIR})
 
 EXTERNALPROJECT_ADD(
-    socketio-ep
+    socketio-ep  DEPENDS   boost_ep openssl
     GIT_REPOSITORY https://github.com/beameio/socket.io-client-cpp.git
     BUILD_IN_SOURCE 1
     CMAKE_ARGS -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR} -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR} -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}  -DBOOST_VER:STRING=1.63.0
@@ -76,7 +76,7 @@ ExternalProject_Get_Property(socketio-ep SOURCE_DIR)
 set(SIO_SOURCE_PATH  ${SOURCE_DIR})
 
 EXTERNALPROJECT_ADD(
-    beame-agent DEPENDS socketio-ep boost_ep
+    beame-agent DEPENDS  openssl boost_ep  socketio-ep
     SOURCE_DIR ./src 
     BUILD_IN_SOURCE 1
     CMAKE_ARGS -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR} -DSIO_SOURCE_PATH=${SIO_SOURCE_PATH} -DBoost_INCLUDE_DIR=${BOOST_INCLUDEDIR} -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR} -DBOOST_VER:STRING=1.63.0 -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR} -DBOOST_ROOT=${BOOST_ROOT}
