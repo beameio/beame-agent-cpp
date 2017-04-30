@@ -54,7 +54,7 @@ EXTERNALPROJECT_ADD(
 
     )
 
-find_package(Boost ${BOOST_VER} REQUIRED COMPONENTS system date_time random thread)
+#find_package(Boost ${BOOST_VER} REQUIRED COMPONENTS system date_time random thread)
 ##include(FindOpenSSL)
 
 EXTERNALPROJECT_ADD(
