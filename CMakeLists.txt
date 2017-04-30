@@ -55,7 +55,7 @@ EXTERNALPROJECT_ADD(
     )
 
 find_package(Boost ${BOOST_VER} REQUIRED COMPONENTS system date_time random thread)
-include(FindOpenSSL)
+##include(FindOpenSSL)
 
 EXTERNALPROJECT_ADD(
     socketio-ep
