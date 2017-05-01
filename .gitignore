@@ -7,4 +7,15 @@ CMakeFiles/
 Makefile
 beame_insta_agent
 cmake_install.cmake
+ .idea/
+INSTALL/
+Project.cbp
+beame-agent-prefix/
+boost_ep-prefix/
+downloads/
+openssl-prefix/
+openssl/
+socketio-ep-prefix/
+src/beame-agent
+src/beame-agent.cbp
 
