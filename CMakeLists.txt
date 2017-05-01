@@ -43,7 +43,7 @@ EXTERNALPROJECT_ADD(
     PATCH_COMMAND ""
     CONFIGURE_COMMAND ${Boost_Bootstrap_Command}
     BUILD_COMMAND ${Boost_b2_Command} install
-    --with-system --with-date_time --with-random --with-thread link=static runtime-link=shared threading=multi
+    --with-system --with-date_time --with-random  --with-program_options --with-thread link=static runtime-link=shared threading=multi
     --prefix=${CMAKE_BINARY_DIR}/INSTALL
     --threading=single,multi
     --link=static
@@ -79,6 +79,7 @@ EXTERNALPROJECT_ADD(
     beame-agent DEPENDS  openssl boost_ep  socketio-ep
     SOURCE_DIR ./src 
     BUILD_IN_SOURCE 1
-    CMAKE_ARGS -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR} -DSIO_SOURCE_PATH=${SIO_SOURCE_PATH} -DBoost_INCLUDE_DIR=${BOOST_INCLUDEDIR} -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR} -DBOOST_VER:STRING=1.63.0 -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR} -DBOOST_ROOT=${BOOST_ROOT}
+    CMAKE_ARGS -DOPENSSL_ROOT_DIR=${OPENSSL_ROOT_DIR} -DSIO_SOURCE_PATH=${SIO_SOURCE_PATH} -DBoost_INCLUDE_DIR=${BOOST_INCLUDEDIR} -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR} -DBOOST_VER:STRING=1.63.0
     INSTALL_COMMAND ""
+    CONFIGURE_COMMAND ""
     )

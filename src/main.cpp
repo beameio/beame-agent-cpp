@@ -14,7 +14,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <boost/asio.hpp>
-
+#include "crypto.h"
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/make_shared.hpp>
@@ -22,6 +22,11 @@
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <functional> 
+#include <boost/archive/iterators/binary_from_base64.hpp>
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/program_options.hpp>
 
 #include <string>
 #ifdef WIN32
@@ -381,17 +386,76 @@ private:
 
 bool shouldQuit = false;
 void WorkerThread( boost::shared_ptr< boost::asio::io_service > io_service ){
-        startSocetIoConnection(io_service);
-        while(shouldQuit == false){
-			cout << "**************************in************" "\r\n";
-            io_service->run();
-			cout << "**************************OUT************" "\r\n";
-        }
-		cout << "**************EVENT_LOOOP_EXISTED************" "\r\n";
+    startSocetIoConnection(io_service);
+    while(shouldQuit == false){
+        cout << "**************************in************" "\r\n";
+        io_service->run();
+        cout << "**************************OUT************" "\r\n";
     }
+    cout << "**************EVENT_LOOOP_EXISTED************" "\r\n";
+}
+
+
+namespace po = boost::program_options;
+
+void
+show_help(const po::options_description& desc, const std::string& topic = "")
+{
+    std::cout << desc << '\n';
+    if (topic != "") {
+        std::cout << "You asked for help on: " << topic << '\n';
+    }
+    exit( EXIT_SUCCESS );
+}
+
+void
+process_program_options(const int argc, const char *argv[])
+{
+    po::options_description desc("Usage");
+    desc.add_options()
+        (
+            "help,h",
+            po::value< std::string >()
+                ->implicit_value("")
+                ->notifier(
+                    [&desc](const std::string& topic) {
+                        show_help(desc, topic);
+                    }
+                ),
+            "Show help. If given, show help on the specified topic."
+        )
+    ;
+
+    if (argc == 1) {
+        show_help(desc); // does not return
+    }
+
+    po::variables_map args;
+
+    try {
+        po::store(
+            po::parse_command_line(argc, argv, desc),
+            args
+        );
+    }
+    catch (po::error const& e) {
+        std::cerr << e.what() << '\n';
+        exit( EXIT_FAILURE );
+    }
+    po::notify(args);
+    return;
+}
+
 
 	MAIN_FUNC
 	{
+        process_program_options(argc, args);
+
+        char *p = getenv("HOME");
+        string beameDirPath = string(getenv("HOME"));
+        beameDirPath += "./beame/v2";
+        cout << "Out beame_dir is: " <<  beameDirPath;
+
 
         boost::shared_ptr< boost::asio::io_service > io_service(
                 new boost::asio::io_service
