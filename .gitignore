@@ -18,4 +18,5 @@ openssl/
 socketio-ep-prefix/
 src/beame-agent
 src/beame-agent.cbp
+.idea/
 
