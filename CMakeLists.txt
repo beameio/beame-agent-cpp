@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.7)
 
 INCLUDE(ExternalProject)
 set(OPENSSL_BINDIR ${CMAKE_BINARY_DIR}/openssl)
+set(MAKE_BUILD_TYPE Debug)
 
 set( Boost_Bootstrap_Command )
 if( UNIX )
@@ -23,7 +24,7 @@ EXTERNALPROJECT_ADD(
     URL_HASH SHA256=6b3977c61f2aedf0f96367dcfb5c6e578cf37e7b8d913b4ecb6643c3cb88d8c0
     DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}/downloads
     # URL ${CMAKE_SOURCE_DIR}/vendor/openssl-1.0.2-latest.tar.gz
-	CONFIGURE_COMMAND ./config no-shared no-idea no-mdc2 no-rc5 --prefix=${OPENSSL_BINDIR}
+    CONFIGURE_COMMAND ./config no-shared no-idea no-mdc2 no-rc5 --prefix=${OPENSSL_BINDIR}
     BUILD_COMMAND make depend && make
     INSTALL_COMMAND make install_sw
     BUILD_IN_SOURCE 1
@@ -37,16 +38,16 @@ set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
 EXTERNALPROJECT_ADD(
     boost_ep DEPENDS openssl
-    URL https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.zip
-    URL_HASH SHA256=b99973c805f38b549dbeaf88701c0abeff8b0e8eaa4066df47cac10a32097523
+    URL https://dl.bintray.com/boostorg/release/1.63.0/source/boost_1_63_0.zip
+    URL_HASH SHA256=97ce6635df1f44653a597343cd5757bb8b6b992beb3720f5fc761e3644bcbe7b
     UPDATE_COMMAND ""
     PATCH_COMMAND ""
     CONFIGURE_COMMAND ${Boost_Bootstrap_Command}
     BUILD_COMMAND ${Boost_b2_Command} install
-    --with-system --with-date_time --with-random  --with-program_options --with-thread link=static runtime-link=shared threading=multi
+    --with-system --with-date_time --with-random  --with-program_options --with-filesystem --with-thread link=static runtime-link=shared threading=multi
     --prefix=${CMAKE_BINARY_DIR}/INSTALL
     --threading=single,multi
-    --link=static
+    --link=staticZ
     --variant=release
     -j8
     INSTALL_COMMAND ""

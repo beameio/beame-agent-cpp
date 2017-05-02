@@ -6,7 +6,12 @@
 #include <boost/archive/iterators/base64_from_binary.hpp>
 #include <boost/archive/iterators/transform_width.hpp>
 #include <boost/algorithm/string.hpp>
+#include "crypto.h"
+#include <iostream>
+#include <boost/filesystem.hpp> 
 
+using namespace std;
+namespace fs = boost::filesystem;
 std::string decode64(const std::string &val) {
     using namespace boost::archive::iterators;
     using It = transform_width<binary_from_base64<std::string::const_iterator>, 8, 6>;
@@ -14,38 +19,44 @@ std::string decode64(const std::string &val) {
         return c == '\0';
     });
 }
+Credential::~Credential() {
+    if(bp_public)
+        BIO_free_all(bp_public);
+    if(bp_private)
+        BIO_free_all(bp_private);
+    if(r)
+        RSA_free(r);
+    if(bne)
+        BN_free(bne);
+}
 
+Credential::Credential(std::string fqdn, std::string pathPrefix) {
+    cout << "Generating rsa keys \r\n";
+    cout << "Callled with " << fqdn << " Prefix " << pathPrefix << "\r\n";
 
-bool generate_key(std::string pathPrefix)
-{
-    int             ret = 0;
-    RSA             *r = NULL;
-    BIGNUM          *bne = NULL;
-    BIO             *bp_public = NULL, *bp_private = NULL;
+    fs::create_directories(pathPrefix + "/" + fqdn);
+    std::string fullPathPublic = pathPrefix + "/" + fqdn +"/public_key.pem";
+    std::string fullPathPrivate = pathPrefix + "/" + fqdn + "/private_key.pem";
 
     int             bits = 2048;
     unsigned long   e = RSA_F4;
-    std::string fullPathPublic = pathPrefix + "public_key.pem";
-    std::string fullPathPrivate = pathPrefix + "private_key.pem";
     // 1. generate rsa key
     bne = BN_new();
-    ret = BN_set_word(bne,e);
-    if(ret != 1){
-        goto free_all;
+    int ret = BN_set_word(bne,e);
+    if(ret != 1) {
+        cout << "bignumber allocation failed probably means there is a problem with openssl \r\n";
+        return ;
     }
-
     r = RSA_new();
     ret = RSA_generate_key_ex(r, bits, bne, NULL);
     if(ret != 1){
-        goto free_all;
+        cout << "rsa key generation failed \r\n";
     }
-
-    // 2. save public key
-
     bp_public = BIO_new_file(fullPathPublic.c_str(), "w+");
     ret = PEM_write_bio_RSAPublicKey(bp_public, r);
     if(ret != 1){
-        goto free_all;
+        cout << "writing of public key failed " << fqdn << " " << fullPathPublic << "\r\n";
+        return;
     }
 
     // 3. save private key
@@ -53,13 +64,10 @@ bool generate_key(std::string pathPrefix)
     bp_private = BIO_new_file(fullPathPrivate.c_str(), "w+");
     ret = PEM_write_bio_RSAPrivateKey(bp_private, r, NULL, NULL, 0, NULL, NULL);
 
-    // 4. free
-    free_all:
+}
 
-    BIO_free_all(bp_public);
-    BIO_free_all(bp_private);
-    RSA_free(r);
-    BN_free(bne);
+bool generate_key(std::string pathPrefix)
+{
 
-    return (ret == 1);
+
 }
