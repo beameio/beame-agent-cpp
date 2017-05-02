@@ -468,6 +468,11 @@ process_program_options(const int argc, const char *argv[], string beameHomeDir)
             string fqdn =embeddedDataSection.get<string>("fqdn");
             cout << "Finally fqdn " << fqdn << "\r\n";
             Credential c(fqdn, beameHomeDir);
+            shared_ptr<string> returnPtr;
+            unsigned char *huj = (unsigned char *)" huj";
+            c.RSASign(huj , 3, returnPtr);
+            cout << "Returned signature " << returnPtr->length();
+
         }
     }
 

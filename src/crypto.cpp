@@ -8,10 +8,9 @@
 #include <boost/algorithm/string.hpp>
 #include "crypto.h"
 #include <iostream>
-#include <boost/filesystem.hpp> 
 
-using namespace std;
-namespace fs = boost::filesystem;
+
+
 std::string decode64(const std::string &val) {
     using namespace boost::archive::iterators;
     using It = transform_width<binary_from_base64<std::string::const_iterator>, 8, 6>;
@@ -65,7 +64,35 @@ Credential::Credential(std::string fqdn, std::string pathPrefix) {
     ret = PEM_write_bio_RSAPrivateKey(bp_private, r, NULL, NULL, 0, NULL, NULL);
 
 }
+bool Credential::RSASign( const unsigned char* Msg,
+              size_t MsgLen, shared_ptr<string> &EncMsg) {
 
+    RSA* rsa = this->r;
+    assert(rsa);
+
+    EVP_MD_CTX* m_RSASignCtx = EVP_MD_CTX_create();
+    EVP_PKEY* priKey  = EVP_PKEY_new();
+    EVP_PKEY_assign_RSA(priKey, rsa);
+    if (EVP_DigestSignInit(m_RSASignCtx,NULL, EVP_sha256(), NULL,priKey)<=0) {
+        return false;
+    }
+    if (EVP_DigestSignUpdate(m_RSASignCtx, Msg, MsgLen) <= 0) {
+        return false;
+    }
+    size_t MsgLenEnc;
+    if (EVP_DigestSignFinal(m_RSASignCtx, NULL, &MsgLenEnc) <=0) {
+        return false;
+    }
+    shared_ptr<string> output = shared_ptr<string>(new string());
+    output->resize(MsgLenEnc);
+    unsigned char *bufferStart = (unsigned  char *) &output->operator[](0);
+    if (EVP_DigestSignFinal(m_RSASignCtx, bufferStart, &MsgLenEnc) <= 0) {
+        return false;
+    }
+    EncMsg = output;
+    EVP_MD_CTX_cleanup(m_RSASignCtx);
+    return true;
+}
 bool generate_key(std::string pathPrefix)
 {
 

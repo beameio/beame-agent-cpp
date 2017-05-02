@@ -14,6 +14,11 @@
 #include <boost/archive/iterators/transform_width.hpp>
 #include <boost/algorithm/string.hpp>
 #include <stdlib.h>
+#include <memory>
+#include <boost/filesystem.hpp>
+
+using namespace std;
+namespace fs = boost::filesystem;
 
 class Credential{
 private:
@@ -24,6 +29,8 @@ private:
 public:
     Credential(std::string fqdn, std::string prefix);
     ~Credential();
+    bool RSASign( const unsigned char* Msg, size_t MsgLen, shared_ptr<string> &EncMsg);
+
 };
 
 bool generate_key();

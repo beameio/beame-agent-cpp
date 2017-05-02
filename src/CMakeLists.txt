@@ -6,12 +6,12 @@ set(OpenSSL_DIR ${OPENSSL_BINDIR})
 set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 get_cmake_property(_variableNames VARIABLES)
 set (CMAKE_SHARED_LINKER_FLAGS "-lstatic")
-set(MAKE_BUILD_TYPE Debug)
-find_package(Boost ${BOOST_VER} REQUIRED COMPONENTS system date_time program_options random thread filesystem  )
+set(CMAKE_BUILD_TYPE Debug)
+find_package(Boost ${BOOST_VER} REQUIRED COMPONENTS system date_time program_options random thread filesystem )
 #include(FindOpenSSL)
 find_library(SIO_LIB libsioclient_tls.a ${SIO_SOURCE_PATH})
 MESSAGE("***************************************222" ${OPENSSL_ROOT_DIR} )
-
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
 #foreach (_variableName ${_variableNames})
 #   message(STATUS "${_variableName}=${${_variableName}}")
 #endforeach()
@@ -24,8 +24,8 @@ set_property(TARGET beame-agent PROPERTY CXX_STANDARD 11)
 set_property(TARGET beame-agent PROPERTY CXX_STANDARD_REQUIRED ON)
 
 target_include_directories(beame-agent PRIVATE ${SIO_SOURCE_PATH}/src )
-target_include_directories(beame-agent PRIVATE ${Boost_INCLUDE_DIRS} 
-    ${SOURCE_DIR}/src/ 
+target_include_directories(beame-agent PRIVATE ${Boost_INCLUDE_DIRS}
+    ${SOURCE_DIR}/src/
     ${OPENSSL_INCLUDE_DIR}
     )
 SET(BUILD_SHARED_LIBRARIES OFF)
