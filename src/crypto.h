@@ -18,6 +18,7 @@
 #include <boost/filesystem.hpp>
 #include "boost/property_tree/ptree.hpp"
 #include "boost/property_tree/json_parser.hpp"
+#include <openssl/evp.h>
 
 namespace pt = boost::property_tree;
 
@@ -28,6 +29,8 @@ class Credential{
 private:
     RSA             *r_primary = NULL, *r_secondary = NULL;
     BIGNUM          *bne_primary = NULL, *bne_secondary = NULL;
+    EVP_PKEY       *evp_primary = NULL, *evp_secondary = NULL;
+
     string fullPathPublicPrimary;
     string fullPathPrivatePrimary;
     string fqdn;
@@ -40,7 +43,7 @@ public:
     bool RSASign( const unsigned char* Msg, size_t MsgLen, shared_ptr<string> &EncMsg, RSA *rsa);
     string readFile2(const string &filename);
     shared_ptr<pt::ptree> getRequestJSON();
-    void saveKeysToFile(RSA *r, string fileNamePk, string fileNamePub);
+    void saveKeysToFile(RSA *r, EVP_PKEY *pkey,  string fileNamePk, string fileNamePub);
     string getPublicKeySignatureInPkcs8(RSA *key);
 };
 

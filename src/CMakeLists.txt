@@ -29,7 +29,7 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
 #endforeach()
 
 
-add_executable(beame-agent main.cpp crypto.cpp)
+add_executable(beame-agent main.cpp crypto.cpp agent.cpp proxyClient.cpp)
 
 
 set_property(TARGET beame-agent PROPERTY CXX_STANDARD 11)

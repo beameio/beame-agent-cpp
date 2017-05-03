@@ -41,13 +41,19 @@ string Credential::readFile2(const string &fileName)
 }
 
 Credential::~Credential() {
-    if(r_primary)  RSA_free(r_primary);
+    if(evp_primary) {
+        EVP_PKEY_free(evp_primary);
+    }
+    if(evp_secondary) {
+        EVP_PKEY_free(evp_secondary);
+    }
+  /*  if(r_primary)  RSA_free(r_primary);
     if(r_secondary)  RSA_free(r_secondary);
     if(bne_primary)  BN_free(bne_primary);
-    if(bne_secondary)  BN_free(bne_secondary);
+    if(bne_secondary)  BN_free(bne_secondary);*/
 }
 
-void generatePrivateKeys(BIGNUM **bne, RSA **rsa){
+void generatePrivateKeys(BIGNUM **bne, RSA **rsa, EVP_PKEY **evp){
     *bne = BN_new();
     int             bits = 2048;
     unsigned long   e = RSA_F4;
@@ -61,13 +67,21 @@ void generatePrivateKeys(BIGNUM **bne, RSA **rsa){
     if(ret != 1){
         cout << "rsa key generation failed \r\n";
     }
+    *evp = EVP_PKEY_new();
+    if(*rsa && *evp && EVP_PKEY_assign_RSA(*evp,*rsa)) {
+        /* pKey owns pRSA from now */
+        if (RSA_check_key(*rsa) <= 0) {
+            cout << "EVP Assigment Failed \r\n";
+        }
+    }
 }
 
-void Credential::saveKeysToFile(RSA *r, string fileNamePk, string fileNamePub){
+void Credential::saveKeysToFile(RSA *r, EVP_PKEY *evp_key, string fileNamePk, string fileNamePub){
     BIO *bp_public = NULL, *bp_private = NULL;
     
     bp_public = BIO_new_file(fileNamePub.c_str(), "w+");
-    int ret = PEM_write_bio_RSAPublicKey(bp_public, r);
+    //int ret = PEM_write_bio_RSAPublicKey(bp_public, r);
+    int ret = PEM_write_bio_PUBKEY(bp_public, evp_key);
     if(ret != 1){
         cout << "writing of public key failed " <<  fileNamePub  << "\r\n";
         return;
@@ -76,7 +90,7 @@ void Credential::saveKeysToFile(RSA *r, string fileNamePk, string fileNamePub){
     // 3. save private key
 
     bp_private = BIO_new_file(fileNamePk.c_str(), "w+");
-    ret = PEM_write_bio_RSAPrivateKey(bp_private, r, NULL, NULL, 0, NULL, NULL);
+    ret = PEM_write_bio_RSAPrivateKey(bp_private, r, NULL, NULL, 0, NULL, NULL); //pkcs1 while  PEM_write_bio_PrivateKey does pkcs7/8?
 
     if(ret != 1){
         cout << "writing of private key failed " <<  fileNamePk  << "\r\n";
@@ -100,12 +114,13 @@ Credential::Credential(std::string fqdn, std::string pathPrefix) {
     fullPathPrivateBackup = pathPrefix + "/" + fqdn + "/private_key_bk.pem";
     // 1. generate rsa key (2 of them )
     
-    generatePrivateKeys( &this->bne_primary, &this->r_primary);
-    generatePrivateKeys( &this->bne_secondary, &this->r_secondary);
+    generatePrivateKeys( &this->bne_primary, &this->r_primary, &evp_primary);
+    generatePrivateKeys( &this->bne_secondary, &this->r_secondary, &evp_secondary);
+
     cout << "Saving Primary Key " << fullPathPrivatePrimary << " " << fullPathPublicPrimary << "\r\n";
-    saveKeysToFile(r_primary, fullPathPrivatePrimary, fullPathPublicPrimary);
+    saveKeysToFile(r_primary, evp_primary, fullPathPrivatePrimary, fullPathPublicPrimary);
     cout << "Saving Secondary Key " << fullPathPrivatePrimary << " " << fullPathPublicPrimary << "\r\n";
-    saveKeysToFile(r_secondary, fullPathPrivateBackup, fullPathPublicBackup); 
+    saveKeysToFile(r_secondary, evp_secondary, fullPathPrivateBackup, fullPathPublicBackup);
 }
 
 bool Credential::RSASign( const unsigned char* Msg,
@@ -183,7 +198,7 @@ shared_ptr<pt::ptree> Credential::getRequestJSON(){
     shared_ptr<pt::ptree>  root(new pt::ptree());
     root->put("validity", 31536000);
     root->put("pub.pub", primaryPublicKey);
-    root->put("pub.bk", backupPublicKey);
+    root->put("pub.pub_bk", backupPublicKey);
     root->put("pub.signature",pkSingnature);
     root->put("fqdn", fqdn);
     root->put("format", 1);
