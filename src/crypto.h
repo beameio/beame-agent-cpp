@@ -30,6 +30,8 @@ public:
     Credential(std::string fqdn, std::string prefix);
     ~Credential();
     bool RSASign( const unsigned char* Msg, size_t MsgLen, shared_ptr<string> &EncMsg);
+    string readFile2(const string &filename);
+    void testPublicKeyBytes();
 
 };
 

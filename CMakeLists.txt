@@ -44,7 +44,7 @@ EXTERNALPROJECT_ADD(
     PATCH_COMMAND ""
     CONFIGURE_COMMAND ${Boost_Bootstrap_Command}
     BUILD_COMMAND ${Boost_b2_Command} install
-    --with-system --with-date_time --with-random  --with-program_options --with-filesystem --with-thread link=static runtime-link=shared threading=multi
+    --with-system --with-date_time --with-random  --with-program_options --with-filesystem --with-thread link=static runtime-link=shared variant=debug threading=multi
     --prefix=${CMAKE_BINARY_DIR}/INSTALL
     --threading=single,multi
     --link=staticZ

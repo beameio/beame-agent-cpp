@@ -412,25 +412,27 @@ show_help(const po::options_description& desc, const std::string& topic = "")
 using namespace boost::program_options;
 void to_cout(const std::vector<std::string> &v)
 {
-      std::copy(v.begin(), v.end(),
-                  std::ostream_iterator<std::string>{std::cout, "\n"});
+    std::copy(v.begin(), v.end(),
+            std::ostream_iterator<std::string>{std::cout, "\n"});
 }
-    void
+
+
+void
 process_program_options(const int argc, const char *argv[], string beameHomeDir)
 {
     try {
         options_description desc{"Options"};
         desc.add_options()
-                ("help,h", "Help screen")
-                ("fqdn", value<string>()->notifier([&](string a) {
-                    cout << "huj" << a;
-                }), "fqdn of the local install credential")
-                ("authToken", value<string>()->notifier([&](string a) {
-                    cout << "Initiating with a  secure token ..... \r\n";
-                }), "authorization token from beame-gatekeeper")
-                ("credDir", value<string>()->notifier([&](string a) {
-                    cout << "authToken" << a;
-                }), "specify a different credential folder other than ~/.beame");
+            ("help,h", "Help screen")
+            ("fqdn", value<string>()->notifier([&](string a) {
+                                               cout << "huj" << a;
+                                               }), "fqdn of the local install credential")
+        ("authToken", value<string>()->notifier([&](string a) {
+                                                cout << "Initiating with a  secure token ..... \r\n";
+                                                }), "authorization token from beame-gatekeeper")
+        ("credDir", value<string>()->notifier([&](string a) {
+                                              cout << "authToken" << a;
+                                              }), "specify a different credential folder other than ~/.beame");
         ("enableSXG", value<string>(), "enables intel SGX ");
 
         variables_map vm;
@@ -445,7 +447,7 @@ process_program_options(const int argc, const char *argv[], string beameHomeDir)
         } else if (vm.count("authToken")) {
 
             string json = decode64(vm["authToken"].as<string>());
-//          std::cout << "authToken: " << json;
+            //          std::cout << "authToken: " << json;
             boost::property_tree::ptree pt;
             std::stringstream ss;
             ss << json;
@@ -455,7 +457,7 @@ process_program_options(const int argc, const char *argv[], string beameHomeDir)
             std::stringstream tokenStream;
 
             tokenStream << pt.get<string>("authToken");
-//            cout  << pt.get<string>("authToken") << "\r\n";
+            //            cout  << pt.get<string>("authToken") << "\r\n";
             boost::property_tree::read_json(tokenStream, embeddedToken);
 
             string emdeddedDataSection = embeddedToken.get<string>("signedData.data");
@@ -468,10 +470,12 @@ process_program_options(const int argc, const char *argv[], string beameHomeDir)
             string fqdn =embeddedDataSection.get<string>("fqdn");
             cout << "Finally fqdn " << fqdn << "\r\n";
             Credential c(fqdn, beameHomeDir);
+            c.testPublicKeyBytes();
             shared_ptr<string> returnPtr;
             unsigned char *huj = (unsigned char *)" huj";
-            c.RSASign(huj , 3, returnPtr);
-            cout << "Returned signature " << returnPtr->length();
+            //        c.RSASign(huj , 3, returnPtr);
+            //         cout << "Returned signature " << returnPtr->length();
+
 
         }
     }
@@ -493,8 +497,8 @@ MAIN_FUNC
     cout << "Out beame_dir is: " <<  beameDirPath;
 
     process_program_options(argc, args, beameDirPath);
-    return 0;
 
+    return 0;
 
 
     boost::shared_ptr< boost::asio::io_service > io_service(
