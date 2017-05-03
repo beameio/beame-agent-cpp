@@ -457,11 +457,12 @@ process_program_options(const int argc, const char *argv[], string beameHomeDir)
             std::stringstream tokenStream;
 
             tokenStream << pt.get<string>("authToken");
-            //            cout  << pt.get<string>("authToken") << "\r\n";
+                       cout  << pt.get<string>("authToken") << "\r\n";
             boost::property_tree::read_json(tokenStream, embeddedToken);
 
             string emdeddedDataSection = embeddedToken.get<string>("signedData.data");
-            cout << "Signed Data Segmenet: " << emdeddedDataSection  << "\r\n";
+            string signedData= embeddedToken.get<string>("signedData");
+            cout << "Signed Data Segmenet: " << signedData << "\r\n";
             std::stringstream embeddedTokenStream;
             embeddedTokenStream << emdeddedDataSection;
             boost::property_tree::ptree embeddedDataSection;
@@ -470,7 +471,7 @@ process_program_options(const int argc, const char *argv[], string beameHomeDir)
             string fqdn =embeddedDataSection.get<string>("fqdn");
             cout << "Finally fqdn " << fqdn << "\r\n";
             Credential c(fqdn, beameHomeDir);
-            c.testPublicKeyBytes();
+            c.getRequestJSON();
             shared_ptr<string> returnPtr;
             unsigned char *huj = (unsigned char *)" huj";
             //        c.RSASign(huj , 3, returnPtr);

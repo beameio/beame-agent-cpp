@@ -16,23 +16,32 @@
 #include <stdlib.h>
 #include <memory>
 #include <boost/filesystem.hpp>
+#include "boost/property_tree/ptree.hpp"
+#include "boost/property_tree/json_parser.hpp"
+
+namespace pt = boost::property_tree;
 
 using namespace std;
 namespace fs = boost::filesystem;
 
 class Credential{
 private:
-    RSA             *r = NULL;
-    BIGNUM          *bne = NULL;
-    BIO             *bp_public = NULL, *bp_private = NULL;
+    RSA             *r_primary = NULL, *r_secondary = NULL;
+    BIGNUM          *bne_primary = NULL, *bne_secondary = NULL;
+    string fullPathPublicPrimary;
+    string fullPathPrivatePrimary;
+    string fqdn;
+    string fullPathPublicBackup;
+    string fullPathPrivateBackup;
 
 public:
     Credential(std::string fqdn, std::string prefix);
     ~Credential();
-    bool RSASign( const unsigned char* Msg, size_t MsgLen, shared_ptr<string> &EncMsg);
+    bool RSASign( const unsigned char* Msg, size_t MsgLen, shared_ptr<string> &EncMsg, RSA *rsa);
     string readFile2(const string &filename);
-    void testPublicKeyBytes();
-
+    shared_ptr<pt::ptree> getRequestJSON();
+    void saveKeysToFile(RSA *r, string fileNamePk, string fileNamePub);
+    string getPublicKeySignatureInPkcs8(RSA *key);
 };
 
 bool generate_key();

@@ -11,7 +11,6 @@
 #include "boost/property_tree/ptree.hpp"
 #include "boost/property_tree/json_parser.hpp"
 
-namespace pt = boost::property_tree;
 
 std::string decode64(const std::string &val) {
 
@@ -42,55 +41,76 @@ string Credential::readFile2(const string &fileName)
 }
 
 Credential::~Credential() {
-    if(bp_public)
-        BIO_free_all(bp_public);
-    if(bp_private)
-        BIO_free_all(bp_private);
-    if(r)
-        RSA_free(r);
-    if(bne)
-        BN_free(bne);
+    if(r_primary)  RSA_free(r_primary);
+    if(r_secondary)  RSA_free(r_secondary);
+    if(bne_primary)  BN_free(bne_primary);
+    if(bne_secondary)  BN_free(bne_secondary);
 }
 
-Credential::Credential(std::string fqdn, std::string pathPrefix) {
-    cout << "Generating rsa keys \r\n";
-    cout << "Callled with " << fqdn << " Prefix " << pathPrefix << "\r\n";
-
-    fs::create_directories(pathPrefix + "/" + fqdn);
-    std::string fullPathPublic = pathPrefix + "/" + fqdn +"/public_key.pem";
-    std::string fullPathPrivate = pathPrefix + "/" + fqdn + "/private_key.pem";
-
+void generatePrivateKeys(BIGNUM **bne, RSA **rsa){
+    *bne = BN_new();
     int             bits = 2048;
     unsigned long   e = RSA_F4;
-    // 1. generate rsa key
-    bne = BN_new();
-    int ret = BN_set_word(bne,e);
+    int ret = BN_set_word(*bne,e);
     if(ret != 1) {
         cout << "bignumber allocation failed probably means there is a problem with openssl \r\n";
         return ;
     }
-    r = RSA_new();
-    ret = RSA_generate_key_ex(r, bits, bne, NULL);
+    *rsa = RSA_new();
+    ret = RSA_generate_key_ex(*rsa, bits, *bne, NULL);
     if(ret != 1){
         cout << "rsa key generation failed \r\n";
     }
-    bp_public = BIO_new_file(fullPathPublic.c_str(), "w+");
-    ret = PEM_write_bio_RSAPublicKey(bp_public, r);
+}
+
+void Credential::saveKeysToFile(RSA *r, string fileNamePk, string fileNamePub){
+    BIO *bp_public = NULL, *bp_private = NULL;
+    
+    bp_public = BIO_new_file(fileNamePub.c_str(), "w+");
+    int ret = PEM_write_bio_RSAPublicKey(bp_public, r);
     if(ret != 1){
-        cout << "writing of public key failed " << fqdn << " " << fullPathPublic << "\r\n";
+        cout << "writing of public key failed " <<  fileNamePub  << "\r\n";
         return;
     }
 
     // 3. save private key
 
-    bp_private = BIO_new_file(fullPathPrivate.c_str(), "w+");
+    bp_private = BIO_new_file(fileNamePk.c_str(), "w+");
     ret = PEM_write_bio_RSAPrivateKey(bp_private, r, NULL, NULL, 0, NULL, NULL);
 
+    if(ret != 1){
+        cout << "writing of private key failed " <<  fileNamePk  << "\r\n";
+        return;
+    }
+    if(bp_public)
+        BIO_free_all(bp_public);
+    if(bp_private)
+        BIO_free_all(bp_private);
 }
-bool Credential::RSASign( const unsigned char* Msg,
-        size_t MsgLen, shared_ptr<string> &EncMsg) {
 
-    RSA* rsa = this->r;
+Credential::Credential(std::string fqdn, std::string pathPrefix) {
+    cout << "Generating rsa keys \r\n";
+    cout << "Callled with " << fqdn << " Prefix " << pathPrefix << "\r\n";
+    this->fqdn = fqdn;
+    fs::create_directories(pathPrefix + "/" + fqdn);
+    fullPathPublicPrimary = pathPrefix + "/" + fqdn +"/public_key.pem";
+    fullPathPrivatePrimary = pathPrefix + "/" + fqdn + "/private_key.pem";
+    
+    fullPathPublicBackup = pathPrefix + "/" + fqdn +"/public_key_bk.pem";
+    fullPathPrivateBackup = pathPrefix + "/" + fqdn + "/private_key_bk.pem";
+    // 1. generate rsa key (2 of them )
+    
+    generatePrivateKeys( &this->bne_primary, &this->r_primary);
+    generatePrivateKeys( &this->bne_secondary, &this->r_secondary);
+    cout << "Saving Primary Key " << fullPathPrivatePrimary << " " << fullPathPublicPrimary << "\r\n";
+    saveKeysToFile(r_primary, fullPathPrivatePrimary, fullPathPublicPrimary);
+    cout << "Saving Secondary Key " << fullPathPrivatePrimary << " " << fullPathPublicPrimary << "\r\n";
+    saveKeysToFile(r_secondary, fullPathPrivateBackup, fullPathPublicBackup); 
+}
+
+bool Credential::RSASign( const unsigned char* Msg,
+        size_t MsgLen, shared_ptr<string> &EncMsg, RSA *rsa) {
+
     assert(rsa);
 
     EVP_MD_CTX* m_RSASignCtx = EVP_MD_CTX_create();
@@ -117,43 +137,59 @@ bool Credential::RSASign( const unsigned char* Msg,
     return true;
 }
 
-void Credential::testPublicKeyBytes(){
-    size_t bigNumberLength = BN_num_bytes(r->n);
-    unsigned char returnBuffer[bigNumberLength];
-//    int returnLength = BN_bn2bin(r->n, returnBuffer);
-    //    r->n
-    cout << "Big Number Length " << bigNumberLength << "  \r\n";
-    cout << " Actualy PublicKey Exponent " << BN_bn2hex(r->n) << "\r\n";
-    //3082012230d06092a864886f70d0101010500038201f00308201a02820101
-                                                                        
+string Credential::getPublicKeySignatureInPkcs8(RSA *key){
+
+    size_t bigNumberLength = BN_num_bytes(key->n);
+
     shared_ptr<string> output = shared_ptr<string>(new string(decode64("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA")));
+    
     output->resize(output->length() + 1);
     output->operator[](output->length() -1) = 0;
-    unsigned char foorter[]= {0x02, 0x03, 0x01, 0x00, 0x01};
-    
+    unsigned char footer[]= {0x02, 0x03, 0x01, 0x00, 0x01};
     int startBuferEndPosition = output->length();
-    cout << "WRITING to public key to buffer from position " << output->length() << "sizeof foorter " << sizeof(foorter) <<" \r\n";
-    output->resize(bigNumberLength +output->length() + sizeof(foorter));
-
-
+    output->resize(bigNumberLength +output->length() + sizeof(footer));
     unsigned char *bufferStart = (unsigned  char *) &output->operator[](startBuferEndPosition);
-    int returnLength = BN_bn2bin(r->n, bufferStart);
-    cout << "BN TO BIN return " << returnLength;
-    memcpy((bufferStart  + returnLength),   &foorter[0], sizeof(foorter));
-
-    cout << " TOTAL LENGTH : " << output->length() << "\r\n";
+    int returnLength = BN_bn2bin(key->n, bufferStart);
+    memcpy((bufferStart  + returnLength),   &footer[0], sizeof(footer));
     shared_ptr<string> signature;
     cout << "\r\n" << encode64(*output) << "\r\n";
-
-
     bufferStart = (unsigned  char *) &output->operator[](0);
-    this->RSASign(bufferStart, output->length(), signature);
+    this->RSASign(bufferStart, output->length(), signature, key);
     string base64signatue =  encode64(*signature);
-    pt::ptree root;
-    root.put("validity", 360);
-    root.put("pub.pub", "sdffdsd");
-    pt::write_json(std::cout, root);
+    return base64signatue;
+}
+
+shared_ptr<pt::ptree> Credential::getRequestJSON(){
+    string pkSingnature = getPublicKeySignatureInPkcs8(r_primary);
+    cout << "Public Key signature \r\n\t " << pkSingnature << "\r\n";
+    string primaryPublicKey = readFile2(fullPathPublicPrimary);
+    string backupPublicKey = readFile2(fullPathPublicBackup);
+    cout << primaryPublicKey;
+    cout << backupPublicKey;
+    //int returnLength = BN_bn2bin(r->n, returnBuffer);
+    //cout << "Big Number Length " << bigNumberLength << "  \r\n";
+    //cout << " Actualy PublicKey Exponent " << BN_bn2hex(r->n) << "\r\n";
+   // 3082012230d06092a864886f70d0101010500038201f00308201a02820101
+                                                                        
     
+    //cout << "WRITING to public key to buffer from position " << output->length() << "sizeof footer " << sizeof(footer) <<" \r\n";
+
+
+    //cout << "BN TO BIN return " << returnLength;
+
+    //cout << " TOTAL LENGTH : " << output->length() << "\r\n";
+
+
+    shared_ptr<pt::ptree>  root(new pt::ptree());
+    root->put("validity", 31536000);
+    root->put("pub.pub", primaryPublicKey);
+    root->put("pub.bk", backupPublicKey);
+    root->put("pub.signature",pkSingnature);
+    root->put("fqdn", fqdn);
+    root->put("format", 1);
+//    pt::write_json(std::cout, root);
+//   
+    return root;
 }
 
 
