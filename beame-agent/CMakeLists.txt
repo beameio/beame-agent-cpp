@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
-#project(beame-agent)
+project(beame-agent)
 MESSAGE("SIO_SOURCE_PATH" ${SIO_SOURCE_PATH} )
 MESSAGE("HUJ" ${HUJ})
 
