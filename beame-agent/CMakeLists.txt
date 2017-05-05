@@ -5,7 +5,7 @@ project(beame-agent)
 #foreach (_variableName ${_variableNames})
 #   message(STATUS "${_variableName}=${${_variableName}}")
 #endforeach()
-set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static ")
+set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 set(Boost_USE_STATIC_LIBS   ON)
 set(OPENSSL_BINDIR ${CMAKE_BINARY_DIR}/openssl)
 #set(OPENSSL_ROOT_DIR ${OPENSSL_BINDIR})
@@ -28,7 +28,7 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
 #endforeach()
 
 
-add_executable(beame-agent main.cpp crypto.cpp agent.cpp proxyClient.cpp)
+add_executable(beame-agent main.cpp crypto.cpp agent.cpp proxyClient.cpp https_client.cpp)
 
 
 set_property(TARGET beame-agent PROPERTY CXX_STANDARD 11)

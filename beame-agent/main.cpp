@@ -70,6 +70,7 @@ std::map<string,string> extractParameterFromJsonFile(string fileName, vector<str
 MAIN_FUNC
 {
 
+
     char *p = getenv("HOME");
     string beameDirPath = string(getenv("HOME"));
     beameDirPath += "/.beame/v2";

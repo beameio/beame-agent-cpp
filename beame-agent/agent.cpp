@@ -3,6 +3,9 @@
 //
 
 #include "agent.h"
+
+extern void testClient(string host, string port, shared_ptr<string> requestJson, string path,  std::function<void (string, bool)> callback, string token);
+
 bool shouldQuit = false;
 void WorkerThread( boost::shared_ptr< boost::asio::io_service > io_service){
     while(shouldQuit == false){
@@ -75,6 +78,7 @@ BeameAgentService::decodeCommandLineOptions(const int argc, const char *argv[], 
         options_description desc{"Options"};
         desc.add_options()
                 ("help,h", "Help screen")
+                ("enableSGX", value<string>(), "SGX IS Supported ! when selecting this function beame-agent will create a secure enclave on the CPU \r\n  if you select this option you will not be able to extract your private keys generated on this device ever! Use with CAUTION! \r\n https://github.com/ayeks/SGX-hardware for a list of support Intel CPU  ")
                 ("fqdn", value<string>()->notifier([&](string a) {
                     cout << "huj" << a;
                 }), "fqdn of the local install credential")
@@ -84,7 +88,7 @@ BeameAgentService::decodeCommandLineOptions(const int argc, const char *argv[], 
                 ("credDir", value<string>()->notifier([&](string a) {
                     cout << "authToken" << a;
                 }), "specify a different credential folder other than ~/.beame");
-        ("enableSXG", value<string>(), "enables intel SGX ");
+
 
         variables_map vm;
         store(parse_command_line(argc, argv, desc), vm);
@@ -106,10 +110,18 @@ BeameAgentService::decodeCommandLineOptions(const int argc, const char *argv[], 
             //         cout << "Returned signature " << returnPtr->length();
             boost::shared_ptr<Credential> cred = generateCredentials(token->fqdn, beameHomeDir) ;
             shared_ptr<pt::ptree> tree = cred->getRequestJSON();
-            boost::property_tree::write_json(std::cout, *tree);
-//
 
-        }
+            std::stringstream requestStream;
+            boost::property_tree::write_json(requestStream, *tree);
+            shared_ptr<string> req(new string(requestStream.str()));
+
+
+            testClient("xmq6hpvgzt7h8m76.mpk3nobb568nycf5.v1.d.beameio.net", "443", req, "/api/v1/node/register/complete",  [](string, bool){
+
+            }, token->signature);
+
+
+    }
         return vm;
     }
 
@@ -131,12 +143,12 @@ BeameAgentService::proccessBeameRegToken(string json) { // return
     std::stringstream tokenStream;
 
     tokenStream << pt.get<string>("authToken");
-    cout << pt.get<string>("authToken") << "\r\n";
+    //cout << pt.get<string>("authToken") << "\r\n";
     boost::property_tree::read_json(tokenStream, embeddedToken);
 
     string emdeddedDataSection = embeddedToken.get<string>("signedData.data");
-    string signedData = embeddedToken.get<string>("signedData");
-    cout << "Signed Data Segmenet: " << signedData << "\r\n";
+    string signedData = pt.get<string>("authToken");
+    //cout << "Signed Data Segmenet: " << signedData << "\r\n";
     std::stringstream embeddedTokenStream;
     embeddedTokenStream << emdeddedDataSection;
     boost::property_tree::ptree embeddedDataSection;
