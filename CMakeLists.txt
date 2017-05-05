@@ -47,9 +47,6 @@ EXTERNALPROJECT_ADD(
     CONFIGURE_COMMAND ${Boost_Bootstrap_Command}
     BUILD_COMMAND ${Boost_b2_Command}
         --with-system --with-date_time --with-random  --with-program_options --with-filesystem --with-thread link=static runtime-link=shared variant=debug threading=multi
-        --threading=single,multi
-        --link=staticZ
-        --variant=release
     INSTALL_COMMAND ${Boost_b2_Command} install --prefix=${BOOST_ROOT_DIR}
     )
 
