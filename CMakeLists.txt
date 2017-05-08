@@ -46,9 +46,8 @@ EXTERNALPROJECT_ADD(
     BUILD_IN_SOURCE 1
     # CONFIGURE_COMMAND ${Boost_Bootstrap_Command} --prefix=${BOOST_ROOT_DIR}
     CONFIGURE_COMMAND ${Boost_Bootstrap_Command}
-    BUILD_COMMAND ${Boost_b2_Command}
-        --with-system --with-date_time --with-random  --with-program_options --with-filesystem --with-thread link=static runtime-link=shared variant=debug threading=multi
-    INSTALL_COMMAND ${Boost_b2_Command} install --prefix=${BOOST_ROOT_DIR}
+    BUILD_COMMAND ${Boost_b2_Command} --prefix=${BOOST_ROOT_DIR} --with-system --with-date_time --with-random  --with-program_options --with-filesystem --with-thread link=static runtime-link=shared variant=debug threading=multi install
+    INSTALL_COMMAND ""
     )
 
 set(SIO_ROOT_DIR ${CMAKE_BINARY_DIR}/sio)
