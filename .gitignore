@@ -20,3 +20,5 @@ src/beame-agent
 src/beame-agent.cbp
 .idea/
 build/
+.vscode/
+cmake-build-debug/
